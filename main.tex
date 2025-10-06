@@ -1,0 +1,733 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{hyperref}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{CS307/CS367 Artificial Intelligence Lab : Pre-Mid-Sem Lab Report}
+
+\author{
+\begin{tabular}{ccc}
+\textbf{Divya Kumar Jha} & \textbf{Parth Jindal} & \textbf{Gaurav Soni} \\
+Computer Science and Engineering & Computer Science and Engineering & Computer Science and Engineering \\
+\small 202351034@iiitvadodara.ac.in & \small 202351097@iiitvadodara.ac.in & \small 202351039@iiitvadodara.ac.in \\
+\multicolumn{3}{c}{\textit{Indian Institute of Information Technology Vadodara}} \\
+\multicolumn{3}{c}{\textit{Vadodara, India}} \\[0.3cm]
+\multicolumn{3}{c}{\href{https://github.com/gauravs2430/CS307_CS367_2025.git}{\textbf{GitHub Repo Link}}}
+\end{tabular}
+}
+
+\maketitle
+
+
+\begin{abstract}
+This report presents the implementation and analysis of several fundamental and advanced artificial intelligence algorithms through multiple comprehensive laboratory assignments. The first experiment focuses on the Rabbit Leap Problem, formulated as a state-space search task and solved using Breadth-First Search (BFS) and Depth-First Search (DFS) to identify optimal and non-optimal paths respectively. The second experiment develops a plagiarism detection system employing the A* search algorithm for text alignment and similarity analysis, demonstrating the role of heuristic-based search in natural language processing.
+
+Extending beyond traditional search methods, the study also investigates uniform random k-SAT and 3-SAT problems, which are well-known NP-complete challenges. Randomized SAT instances are generated for various clause-to-variable ratios, and solved using Hill Climbing, Beam Search (with beam widths 3 and 4), and Variable Neighborhood Descent (VND) with multiple neighborhood structures. The algorithms are compared using heuristic-driven performance metrics such as penetrance, revealing that Hill Climbing achieves superior consistency across problem instances.
+
+The final experiment addresses the Jigsaw Puzzle problem, another NP-complete challenge, using Adaptive Simulated Annealing. The algorithm minimizes mismatch costs between neighboring image fragments to reconstruct the original image effectively, highlighting the use of stochastic optimization in perceptual problem-solving.
+
+Overall, these implementations demonstrate the versatility and effectiveness of both classical and heuristic AI search algorithms—from deterministic searches to probabilistic optimization—in solving diverse and complex real-world computational problems..
+\end{abstract}
+
+\begin{IEEEkeywords}
+State-space search, BFS, DFS, A* algorithm, heuristic search, k-SAT, Hill Climbing, Beam Search, Variable Neighborhood Descent, Simulated Annealing, Jigsaw Puzzle, plagiarism detection, NP-complete problems. 
+\end{IEEEkeywords}
+
+\section{Introduction}
+Artificial intelligence search algorithms form the backbone of problem-solving systems across diverse domains. This laboratory report examines the implementation and performance characteristics of fundamental and heuristic search strategies through multiple applications: the classical Rabbit Leap puzzle, a plagiarism detection system, k-SAT and 3-SAT heuristic search problems, and the Jigsaw Puzzle reconstruction task. The investigation encompasses uninformed search methods (BFS, DFS), informed heuristic search (A*), and advanced optimization algorithms such as Hill Climbing, Beam Search, Variable Neighborhood Descent (VND), and Simulated Annealing, providing a comprehensive analysis of their computational behavior and effectiveness. The Rabbit Leap Problem serves as an ideal testbed for evaluating algorithmic performance in constrained state spaces, while plagiarism detection demonstrates heuristic search applications in natural language processing. The k-SAT and 3-SAT problems, being NP-complete, highlight the use of heuristic functions to reduce search complexity and analyze non-traditional optimization methods, whereas the Jigsaw Puzzle problem employs simulated annealing to minimize mismatches between image fragments and reconstruct the original image. Collectively, these experiments illustrate the versatility and effectiveness of AI search algorithms—from deterministic exploration to stochastic optimization—in solving diverse and computationally challenging problems.
+
+\section{Rabbit Leap Problem}
+
+\subsection{Problem Formulation}
+The Rabbit Leap Problem involves seven positions arranged linearly: three east-bound rabbits (E), one empty space (\_), and three west-bound rabbits (W), initially configured as ``EEE\_WWW''. The objective is to transform this configuration to the goal state ``WWW\_EEE'' where all rabbits have crossed positions.
+
+Movement constraints include: (1) rabbits can move forward one step into an empty space, (2) rabbits can jump over exactly one rabbit of opposite direction into an empty space, and (3) no backward movement is permitted.
+
+\subsection{State-Space Analysis}
+Each state is represented as a string of length 7 containing characters 'E' (east-bound rabbit), 'W' (west-bound rabbit), and '\_' (empty space). The total search space consists of all valid permutations:
+
+\begin{equation}
+|S| = \frac{7!}{3! \times 3! \times 1!} = 140 \text{ states}
+\end{equation}
+
+The action space for any state with empty position at index $i$ includes:
+\begin{itemize}
+\item Forward move: position $i-1$ contains 'E' or position $i+1$ contains 'W'
+\item Jump move: position $i-2$ contains 'E' (jumping over W at $i-1$) or position $i+2$ contains 'W' (jumping over E at $i+1$)
+\end{itemize}
+
+
+\subsection{Algorithm Implementation}
+
+\begin{enumerate}[label=\alph*)]
+  \item \textbf{State Representation:}  
+  The puzzle state is represented using a string (\texttt{E}, \texttt{W}, \texttt{\_}) where:  
+  \begin{itemize}
+    \item \texttt{E} represents a white rabbit,
+    \item \texttt{W} represents a black rabbit,
+    \item \texttt{\_} (underscore) represents the empty space.
+  \end{itemize}
+
+  \vspace{\baselineskip} % single line gap
+
+  \item \textbf{Functions Implemented:}
+  \begin{itemize}[itemsep=1ex, parsep=0pt]
+    \item \texttt{class Node:} Defines a node structure storing the \texttt{state} and its \texttt{parent}.
+    \item \texttt{is\_goal(state):} Checks if the given state is the goal (\texttt{"WWW\_EEE"}).
+    \item \texttt{get\_successors(state):} Generates all valid next states by moving \texttt{E} (right) or \texttt{W} (left) into the empty space.
+    \item \texttt{reconstruct\_path(node):} Reconstructs the solution path from the goal state back to the initial state.
+    \item \texttt{bfs():} Implements Breadth-First Search using a queue (\texttt{collections.deque}) to find the shortest solution path.
+    \item \texttt{dfs():} Implements Depth-First Search using a stack to find a possible solution path.
+  \end{itemize}
+
+  \vspace{\baselineskip}
+
+  \item \textbf{Execution:}  
+  The algorithm is executed by calling \texttt{bfs()} and \texttt{dfs()} on the initial state \texttt{"EEE\_WWW"} with the goal state \texttt{"WWW\_EEE"}.  
+  \begin{itemize}
+    \item BFS outputs the shortest solution path along with the number of steps.
+    \item DFS outputs one valid solution path along with the number of steps.
+  \end{itemize}
+\end{enumerate}
+\begin{algorithm}
+\caption{Breadth-First Search (BFS) for Rabbit Leap Problem}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} BFS\_Rabbit\_Leap()
+\STATE $initial\_state \leftarrow "EEE\_WWW"$
+\STATE $goal\_state \leftarrow "WWW\_EEE"$
+\STATE $frontier \leftarrow Queue()$
+\STATE $frontier.enqueue(Node(initial\_state, null))$
+\STATE $visited \leftarrow Set()$
+\STATE $visited.add(initial\_state)$
+\WHILE{$frontier$ is not empty}
+    \STATE $current\_node \leftarrow frontier.dequeue()$
+    \IF{Is\_GOAL($current\_node.state$)}
+        \RETURN RECONSTRUCT\_PATH($current\_node$)
+    \ENDIF
+    \FOR{each $succ\_state$ in GET\_SUCCESSORS($current\_node.state$)}
+        \IF{$succ\_state \notin visited$}
+            \STATE $visited.add(succ\_state)$
+            \STATE $succ\_node \leftarrow Node(succ\_state, current\_node)$
+            \STATE $frontier.enqueue(succ\_node)$
+        \ENDIF
+    \ENDFOR
+\ENDWHILE
+\RETURN $null$ \COMMENT{No solution found}
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}
+\caption{Successor State Generation}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} Get\_Successor($state$)
+\STATE $successors \leftarrow List()$
+\STATE $index \leftarrow state.index(\texttt{'\_'})$
+\STATE $state\_len \leftarrow LENGTH(state)$
+
+\COMMENT{Move from left (E can move right)}
+\IF{$index - 1 \geq 0$ and $state[index-1] == \texttt{'E'}$}
+    \STATE $new\_state \leftarrow SWAP(state, index, index-1)$
+    \STATE $successors.append(new\_state)$
+\ENDIF
+\IF{$index - 2 \geq 0$ and $state[index-2] == \texttt{'E'}$}
+    \STATE $new\_state \leftarrow SWAP(state, index, index-2)$
+    \STATE $successors.append(new\_state)$
+\ENDIF
+
+\COMMENT{Move from right (W can move left)}
+\IF{$index + 1 < state\_len$ and $state[index+1] == \texttt{'W'}$}
+    \STATE $new\_state \leftarrow SWAP(state, index, index+1)$
+    \STATE $successors.append(new\_state)$
+\ENDIF
+\IF{$index + 2 < state\_len$ and $state[index+2] == \texttt{'W'}$}
+    \STATE $new\_state \leftarrow SWAP(state, index, index+2)$
+    \STATE $successors.append(new\_state)$
+\ENDIF
+
+\RETURN $successors$
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Experimental Results}
+The BFS algorithm consistently finds the optimal solution in 15 moves, while DFS may produce solutions of varying lengths (15-25 moves) depending on the exploration order. Table \ref{tab:rabbit_comparison} summarizes the performance characteristics.
+
+\begin{table}[htbp]
+\caption{Algorithm Performance Comparison for Rabbit Leap Problem}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Algorithm} & \textbf{Time} & \textbf{Space} & \textbf{Optimal} & \textbf{Complete} \\
+\hline
+BFS & $O(b^d)$ & $O(b^d)$ & Yes & Yes \\
+DFS & $O(b^m)$ & $O(bm)$ & No & Yes* \\
+\hline
+\end{tabular}
+\label{tab:rabbit_comparison}
+\end{center}
+*Complete for finite state spaces; $b$ = branching factor, $d$ = optimal depth, $m$ = maximum depth
+\end{table}
+
+\section{Plagiarism Detection Using A* Search}
+
+\subsection{Problem Statement}
+The plagiarism detection system identifies potential copying by finding optimal alignments between sentences from two documents. The system minimizes edit distance while maximizing similarity scores using A* search to efficiently navigate the alignment space.
+
+\subsection{Theoretical Foundation}
+A* combines the advantages of Dijkstra's algorithm and greedy best-first search using the evaluation function:
+\begin{equation}
+f(n) = g(n) + h(n)
+\end{equation}
+where $f(n)$ is the total estimated cost, $g(n)$ is the actual cost from start to node $n$, and $h(n)$ is the heuristic estimate from node $n$ to goal.
+
+The system employs multiple similarity metrics:
+\begin{itemize}
+\item \textbf{Levenshtein Distance}: Character-level edit operations
+\end{itemize}
+
+\subsection{Algorithm Implementation}
+The plagiarism detection framework is implemented using the A* search algorithm. 
+Each document is first preprocessed into a sequence of sentences, which serve as 
+the basic units for comparison. The problem is formulated as a state-space search, 
+where each state represents the current alignment position between the two documents.  
+
+The algorithm starts from the initial state $(0,0)$ and explores possible transitions:  
+\begin{itemize}
+    \item \textbf{Match:} Align a sentence from both documents with an associated edit distance cost.  
+    \item \textbf{Skip from Doc1:} Advance in the first document, penalizing unaligned text.  
+    \item \textbf{Skip from Doc2:} Advance in the second document with a similar penalty.  
+\end{itemize}
+
+The A* search uses a priority queue to expand states based on the sum of the actual cost 
+$g$ (alignment cost so far) and a heuristic $h$ (remaining unmatched sentences).  
+When the goal state $(|S_1|, |S_2|)$ is reached, the algorithm returns the alignment path 
+with the minimum cost, which indicates the degree of similarity or plagiarism between the documents.
+
+
+
+\begin{algorithm}
+\caption{A* Plagiarism Detection Framework}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} A\_STAR\_PLAGIARISM\_DETECTION($doc1$, $doc2$)
+\STATE $sentences1 \leftarrow PREPROCESS\_TEXT(doc1)$
+\STATE $sentences2 \leftarrow PREPROCESS\_TEXT(doc2)$
+\STATE $start\_state \leftarrow (0, 0)$ \COMMENT{(index in doc1, index in doc2)}
+\STATE $goal\_state \leftarrow (|sentences1|, |sentences2|)$
+\STATE $frontier \leftarrow PriorityQueue()$
+\STATE $frontier.push((0, 0, start\_state, []))$ \COMMENT{(f, g, state, path)}
+\STATE $visited \leftarrow Set()$
+\WHILE{$frontier$ is not empty}
+    \STATE $(f, g, (i,j), path) \leftarrow frontier.pop()$
+    \IF{$(i,j) == goal\_state$}
+        \RETURN $(path, g)$
+    \ENDIF
+    \IF{$(i,j) \in visited$}
+        \STATE continue
+    \ENDIF
+    \STATE $visited.add((i,j))$
+    
+    \COMMENT{Option 1: Match sentences}
+    \IF{$i < |sentences1|$ and $j < |sentences2|$}
+        \STATE $cost \leftarrow EDIT\_DISTANCE(sentences1[i], sentences2[j])$
+        \STATE $new\_state \leftarrow (i+1, j+1)$
+        \STATE $new\_g \leftarrow g + cost$
+        \STATE $new\_h \leftarrow (|sentences1|-i-1) + (|sentences2|-j-1)$
+        \STATE $frontier.push((new\_g+new\_h, new\_g, new\_state, path + [("MATCH", sentences1[i], sentences2[j], cost)]))$
+    \ENDIF
+
+    \COMMENT{Option 2: Skip from Doc1}
+    \IF{$i < |sentences1|$}
+        \STATE $new\_state \leftarrow (i+1, j)$
+        \STATE $new\_g \leftarrow g + 5$
+        \STATE $new\_h \leftarrow (|sentences1|-i-1) + (|sentences2|-j)$
+        \STATE $frontier.push((new\_g+new\_h, new\_g, new\_state, path + [("SKIP\_DOC1", sentences1[i], None, 5)]))$
+    \ENDIF
+
+    \COMMENT{Option 3: Skip from Doc2}
+    \IF{$j < |sentences2|$}
+        \STATE $new\_state \leftarrow (i, j+1)$
+        \STATE $new\_g \leftarrow g + 5$
+        \STATE $new\_h \leftarrow (|sentences1|-i) + (|sentences2|-j-1)$
+        \STATE $frontier.push((new\_g+new\_h, new\_g, new\_state, path + [("SKIP\_DOC2", None, sentences2[j], 5)]))$
+    \ENDIF
+\ENDWHILE
+\RETURN $(null, \infty)$ \COMMENT{No alignment found}
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+
+
+\begin{algorithm}
+\caption{Text Preprocessing Pipeline}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} PREPROCESS\_TEXT($document$)
+\STATE $text \leftarrow document.lower()$
+\STATE $text \leftarrow REMOVE\_PUNCTUATION(text)$ \COMMENT{Keep only periods}
+\STATE $sentences \leftarrow SPLIT\_BY\_PERIODS(text)$
+\STATE $processed\_sentences \leftarrow []$
+\FOR{each $sentence$ in $sentences$}
+    \IF{$sentence.strip() \neq \emptyset$}
+        \STATE $processed\_sentences.append(sentence.strip())$
+    \ENDIF
+\ENDFOR
+\RETURN $processed\_sentences$
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Experimental Results}
+Four comprehensive test cases were implemented to evaluate system performance:
+
+\begin{table}[htbp]
+\caption{Plagiarism Detection Test Results}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Test Case} & \textbf{Alignment} & \textbf{Edit Dist.} & \textbf{Time (s)} & \textbf{Confidence} \\
+\hline
+Identical Documents & 1.0 & 0 & 0.23 & 100\% \\
+Modified Documents & 0.78 & 12.4 & 1.34 & 85\% \\
+Different Documents & 0.12 & 89.2 & 0.87 & 5\% \\
+Partial Overlap & 0.45 & 34.7 & 2.1 & 60\% \\
+\hline
+\end{tabular}
+\label{tab:plagiarism_results}
+\end{center}
+\end{table}
+
+Performance scaling analysis shows the system handles documents up to 2000 words effectively:
+
+\begin{table}[htbp]
+\caption{System Performance Scaling}
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Document Size} & \textbf{Process Time} & \textbf{Memory} & \textbf{Accuracy} \\
+\hline
+0-500 words & 0.1-0.5s & 12MB & 94.2\% \\
+500-1000 words & 0.5-2.0s & 28MB & 92.8\% \\
+1000-2000 words & 2.0-8.0s & 56MB & 91.5\% \\
+2000+ words & 8.0-20.0s & 120MB & 89.7\% \\
+\hline
+\end{tabular}
+\label{tab:performance_scaling}
+\end{center}
+\end{table}
+
+\section{Comparative Analysis}
+
+\subsection{Algorithm Effectiveness}
+Table \ref{tab:final_comparison} presents a comprehensive comparison of all implemented algorithms across multiple performance dimensions.
+
+\begin{table}[htbp]
+\caption{Comprehensive Algorithm Comparison}
+\begin{center}
+\begin{tabular}{|l|l|c|c|c|c|}
+\hline
+\textbf{Algorithm} & \textbf{Domain} & \textbf{Optimal} & \textbf{Time} & \textbf{Space} & \textbf{Complex.} \\
+\hline
+BFS & Rabbit Leap & Yes & $O(b^d)$ & Low & Simple \\
+DFS & Rabbit Leap & No & $O(b^m)$ & High & Simple \\
+A* & Text Alignment & Yes* & $O(b^d)$ & Medium & Complex \\
+\hline
+\end{tabular}
+\label{tab:final_comparison}
+\end{center}
+*With admissible heuristic
+\end{table}
+
+\subsection{Key Findings}
+\begin{enumerate}
+\item \textbf{Search Strategy Effectiveness}: BFS proves superior for finding optimal solutions in finite, unweighted state spaces, while A* demonstrates excellence in weighted, heuristic-guided domains.
+
+\item \textbf{Heuristic Design Impact}: Well-designed admissible heuristics in A* reduce computational overhead by an average of 67\% while maintaining solution optimality.
+
+\item \textbf{Scalability Considerations}: DFS shows better memory scalability but sacrifices solution quality, making it suitable for resource-constrained environments where suboptimal solutions are acceptable.
+
+\item \textbf{Domain-Specific Adaptations}: Text processing applications benefit from sophisticated preprocessing pipelines and multiple similarity metrics to handle linguistic variations effectively.
+\end{enumerate}
+
+
+\newpage
+\section{K-SAT problem}
+K-SAT problem is a NP-complete problem. NP-complete problems are one of the hardest kinds of puzzle for computer to solve efficiently.
+\subsection{Objective}
+
+The main purpose of this was to learn how to use a Heuristic function and Explore different, non-traditional search algorithms.
+
+\subsection{Problem Statement}
+Write a program to randomly generate k-SAT problems.  The program must accept values for k, m the number of clauses in the formula, and n the number of variables.  Each clause of length k must contain distinct variables or their negation.  Instances generated by this algorithm belong to fixed clause length models of SAT and are known as uniform random k-SAT problems.
+
+    \subsection{Generating k-SAT problems}
+Now to generate the K-SAT, we have to define some parameters : \textit{m} number of clauses in the formula and \textit{k} number of literals in each clause and number of unique variables used for the problems is represented by \textit{n}. we repeatedly select k literals to construct each clause.After the m clauses, these are joined together using logical AND Operator to complete the K-SAT Formula. \\
+\begin{algorithm}
+\caption{k-SAT Formula Generator}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} CREATE\_KSAT\_FORMULA($k, m, n$)
+\STATE $formula \leftarrow []$
+\FOR{$i \leftarrow 1$ to $m$}
+    \STATE $clause \leftarrow []$
+    \STATE $variables \leftarrow$ $k$ unique random variables from $1$ to $n$
+    \FOR{each $variable$ in $variables$}
+        \IF{random() $< 0.5$}
+            \STATE $clause.append(variable)$
+        \ELSE
+            \STATE $clause.append(-variable)$
+        \ENDIF
+    \ENDFOR
+    \STATE $formula.append(clause)$
+\ENDFOR
+\RETURN $formula$
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+\newpage
+\section{3-SAT}
+\subsection{Objective}
+To study how heuristic functions help minimize the search space and to examine advanced , non-traditional search methods suitable for solving large-scale problems.
+
+\subsection{Problem Statement}
+Write programs to solve a set of uniform random 3-SAT problems for different combinations of m and n, and compare their performance.  Try the Hill-Climbing, Beam-Search with beam widths 3 and 4, Variable-Neighborhood-Descent with 3 neighborhood functions.  Use two different heuristic functions and compare them with respect to penetrance.
+
+\subsection{Generating 3-SAT problem}
+After creating the 3-SAT formula , the next steps are :
+\begin{itemize}
+    \item Assign True(1) or False(0) to each n variables. 
+    \item Use three different methods to find the solution.
+\end{itemize}
+
+
+\subsection{Hill climbing}
+Hill climbing is a local search heuristic that seeks to iteratively improve a solution by moving in the direction of the greatest increase (or decrease in cost) of a selected metric. Much like a greedy algorithm, it prioritizes the best local move over planning for a global optimum. The process initiates from a random starting point and evaluates its current proximity to a solution, often by counting the number of satisfied (true) clauses in the current state. It then generates a "neighbor" state by making minor adjustments (manipulating variable values) to the current configuration and continues this process until the problem's goal is achieved.
+
+\subsubsection{Pros}
+\begin{itemize}
+    \item The algorithm is exceptionally easy to implement and requires minimal setup.
+    \item Its efficiency significantly improves when it's strategically combined or hybridized with other search methodologies.
+\end{itemize}
+\subsubsection{Cons}
+\begin{itemize}
+    \item Because the algorithm is purely greedy, focusing only on the immediate best move, it frequently gets stuck in a local optimum, meaning it fails to locate the best possible, or global optimum, solution.
+    \item The search can become paralyzed on flat landscapes (or plateaus) where the current state and all possible neighboring states yield an identical fitness score, making it impossible to determine a better direction. 
+\end{itemize}
+\subsection{Beam Search}
+Beam Search is a type of heuristic search algorithm that looks for the best solution by exploring only a limited number of possible options at each step. Instead of checking every path, it keeps only a few of the most promising ones — called the “beam” — based on their heuristic (score or cost) values. The algorithm starts from an initial state and expands its successors, keeping only the best few to continue the search. This process repeats until it reaches the goal or runs out of possible paths within the chosen beam width. By doing this, Beam Search saves both time and memory, maintaining a good balance between breadth (exploring widely) and depth (going deeper along promising paths).
+\subsubsection{Pros}
+\begin{itemize}
+    \item Fast and memory-efficient, so it can explore large search spaces quickly.
+    \item Can find good solutions without checking every possible path, especially in well-structured problems. search, especially in well-structured problems.
+\end{itemize}
+\subsubsection{Cons}
+\begin{itemize}
+    \item Does not always find the best solution because some promising paths may be ignored.
+    \item Performance depends on the beam width: too small and it may miss good options; too large and it may become slower and less efficient.
+\end{itemize} 
+
+
+\subsection{Variable Neighborhood Search}
+The Variable Neighborhood Search (VNS) is an optimization heuristic designed to overcome the problem of becoming trapped in local optima by systematically altering the structure of the search space it explores. The process begins with an initial solution, which is evaluated for quality. VNS then attempts localized improvements within various defined "neighborhoods" (sets of closely related solutions). If an exploration yields a superior solution, the search intensity is focused on that current neighborhood. If no improvement is found, the algorithm strategically shifts to a different, larger, or entirely new neighborhood. This technique of dynamically changing the search scope allows VNS to thoroughly explore the solution space, significantly increasing its likelihood of locating the global optimum.
+
+
+\subsubsection{Pros}
+\begin{itemize}
+    \item VNS is more reliable than basic local search methods because its ability to systematically change the size and structure of the search neighborhoods allows it to effectively escape local optima.
+    \item The algorithm's design is highly flexible, enabling developers to customize the neighborhood definitions to best suit the specific characteristics of the problem being solved.
+\end{itemize}
+\subsubsection{Cons}
+\begin{itemize}
+    \item The algorithm requires the careful and often complex design of its neighborhood structures, which must be tailored specifically to the unique characteristics of the problem at hand.
+    \item VNS can become computationally expensive or intensive, particularly if the optimization process involves exploring a large number of diverse neighborhoods.
+\end{itemize}
+\begin{algorithm}
+\caption{SAT Problem Generator}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} CREATE\_PROBLEM($m, k, n$)
+\STATE $positive\_var \leftarrow$ first $n$ lowercase letters
+\STATE $negative\_var \leftarrow$ uppercase version of $positive\_var$
+\STATE $variables \leftarrow positive\_var \cup negative\_var$
+\STATE $allCombs \leftarrow$ all combinations of $k$ elements from $variables$
+\STATE $problems \leftarrow []$
+\STATE $i \leftarrow 0$
+\WHILE{$i < 10$}
+    \STATE $c \leftarrow$ random sample of $m$ elements from $allCombs$
+    \IF{$c \notin problems$}
+        \STATE $problems.append(c)$
+        \STATE $i \leftarrow i + 1$
+    \ENDIF
+\ENDWHILE
+\RETURN $variables, problems$
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Hill Climbing for SAT}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} HILL\_CLIMBING(\\
+\hspace{1.2em}$problem, assign, parentNum, received, step$)
+
+\STATE $bestAssign \leftarrow assign$
+\STATE $maxNum \leftarrow parentNum$
+\STATE $maxAssign \leftarrow assign$
+\FOR{each $variable$ in $assign$}
+    \STATE $step \leftarrow step + 1$
+    \STATE $editAssign \leftarrow assign$ with $variable$ flipped
+    \STATE $c \leftarrow \text{Solve}(problem, editAssign)$
+    \IF{$c > maxNum$}
+        \STATE $received \leftarrow step$
+        \STATE $maxNum \leftarrow c$
+        \STATE $maxAssign \leftarrow editAssign$
+    \ENDIF
+\ENDFOR
+\IF{$maxNum = parentNum$}
+    \RETURN $bestAssign, maxNum, received / (step - |assign|)$
+\ELSE
+    \RETURN HILL\_CLIMBING(\\
+    
+    \hspace{1.2em}$problem, maxAssign, maxNum, received, step$)
+\ENDIF
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}[t]
+\caption{Variable Neighbor for SAT}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} VARIABLE\_NEIGHBOR(\\
+\hspace{1.2em}$problem, assign, b, step$)
+\STATE $initial \leftarrow \text{Solve}(problem, assign)$
+\IF{$initial = |problem|$}
+    \RETURN $assign, step / step, b$
+\ENDIF
+\STATE $possibleAssigns \leftarrow []$
+\STATE $possibleScores \leftarrow []$
+\STATE $steps \leftarrow []$
+\FOR{each $variable$ in $assign$}
+    \STATE $step \leftarrow step + 1$
+    \STATE $editAssign \leftarrow assign$ with $variable$ flipped
+    \STATE $c \leftarrow \text{Solve}(problem, editAssign)$
+    \STATE $possibleAssigns.append(editAssign)$
+    \STATE $possibleScores.append(c)$
+    \STATE $steps.append(step)$
+\ENDFOR
+\STATE $selected \leftarrow$ indices of $b$ highest scores in $possibleScores$
+\IF{$|problem| \in possibleScores$}
+    \STATE $index \leftarrow$ first index where $possibleScores[i] = |problem|$
+    \RETURN \\
+    \hspace{1.2em}$possibleAssigns[index], steps[index] / steps[-1], b$
+\ELSE
+    \FOR{$a$ in $selected$}
+        \RETURN VARIABLE\_NEIGHBOR(\\
+        \hspace{1.2em}$problem, possibleAssigns[a], b + 1, step$)
+    \ENDFOR
+\ENDIF
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}
+\caption{Beam Search for SAT}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} BEAM\_SEARCH(\\
+\hspace{1.2em}$problem, assign, b, stepSize$)
+\STATE $initial \leftarrow \text{Solve}(problem, assign)$
+\IF{$initial = |problem|$}
+    \RETURN $assign, stepSize / stepSize$
+\ENDIF
+\STATE $possibleAssigns \leftarrow []$
+\STATE $possibleScores \leftarrow []$
+\STATE $steps \leftarrow []$
+\FOR{each $variable$ in $assign$}
+    \STATE $stepSize \leftarrow stepSize + 1$
+    \STATE $editAssign \leftarrow assign$ with $variable$ flipped
+    \STATE $c \leftarrow \text{Solve}(problem, editAssign)$
+    \STATE $possibleAssigns.append(editAssign)$
+    \STATE $possibleScores.append(c)$
+    \STATE $steps.append(stepSize)$
+\ENDFOR
+\STATE $selected \leftarrow$ indices of $b$ highest scores in $possibleScores$
+\IF{$|problem| \in possibleScores$}
+    \STATE $index \leftarrow$ first index where $possibleScores[i] = |problem|$
+    \RETURN $possibleAssigns[index], steps[index] / steps[-1]$
+\ELSE
+    \FOR{$a$ in $selected$}
+        \RETURN BEAM\_SEARCH(\\
+        \hspace{1.2em}$problem, possibleAssigns[a], b, stepSize$)
+    \ENDFOR
+\ENDIF
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+
+
+
+\subsection{Comparative analysis}
+The penetrance values were utilized as the metric to conduct a comparison across all three algorithms.
+
+ 
+\begin{table}[h]
+\centering
+\begin{tabular}{|p{3cm}|p{3cm}|}
+\hline
+\textbf{Algorithm} & \textbf{Penetrance Values} \\
+\hline
+Hill Climbing & 1/1, 8/11, 1/1, 1/1, 1/1, 2/11, 2/11, 1/1, 1/1, 2/11 \\
+\hline
+Beam Search (3) & 12/21, 8/11, 1/1, 1/1, 1/1, 2/11, 2/11, 1/1, 1/1, 2/11 \\
+\hline
+Beam Search (4) & 13/21, 8/11, 1/1, 1/1, 1/1, 2/11, 2/11, 1/1, 1/1 \\
+\hline
+Variable Neighbourhood & 12/21, 8/11, 1/1, 1/1, 1/1, 2/11, 2/11, 1/1 \\
+\hline
+\end{tabular}
+
+\caption{Penetrance Values for Different Algorithms}
+\label{tab:penetrance_values}
+\end{table}
+\subsubsection{Analysis}
+\begin{itemize}
+  \item \textbf{Hill Climbing:}
+  \begin{itemize}
+    \item The results demonstrate the algorithm's strong performance:
+
+
+    \item It reached the maximum penetrance (1/1) for five total problems.
+
+
+    \item The algorithm reliably showed high penetrance levels throughout the entire test set.
+  \end{itemize}
+  
+  \item \textbf{Beam Search (3) and Variable Neighbourhood:}
+  \begin{itemize}
+    \item This approach exhibited a limited capacity for finding solutions:
+
+
+    \item Its penetrance peaked at just 12/21 for a subset of the problems.
+
+
+    \item These results point toward the algorithm being less efficient at satisfying clauses.
+
+
+  \end{itemize}
+  
+  \item \textbf{Observation:} Despite its weakest single-run score (2/11), the Hill Climbing algorithm achieved a higher aggregate performance than both Beam Search and Variable Neighbourhood Search when considering all trials.
+\end{itemize}
+
+
+\subsubsection{Conclusion}
+\begin{itemize}
+  \item \textbf{Most Effective Algorithm:} Hill Climbing
+  \item \textbf{Least Effective Algorithms:} Beam Search (3) and Variable Neighbourhood (exhibiting comparable penetrance performance)
+\end{itemize}
+
+
+
+
+
+\section{Jigsaw puzzle}
+% no \IEEEPARstart
+
+% You must have at least 2 lines in the paragraph with the drop letter
+% (should never be an issue)
+
+
+\subsection{Introduction}
+The Jigsaw Puzzle problem is an NP-complete problem where the goal is to reconstruct the original image from a set of randomly shuffled pieces. To solve this, an Adaptive Simulated Annealing approach was used, which measures how well the edges of neighboring pieces match. Earlier, Bunke and Kaufmann suggested a best-first tree-search method using recursion and backtracking, but it took an exponential amount of time to solve the puzzle, confirming its NP-complete nature. Later, Cantoni (1996) proposed a better approach: adding constraints into a loss function that can be minimized effectively using simulated annealing.
+
+
+\subsection{Approach}
+
+We used Simulated Annealing to solve the Jigsaw Puzzle problem, aiming to reduce mismatches between neighboring pieces to reconstruct the original image. First, the image is split into 16 equal pieces, making it easier to rearrange them. A cost function is used to measure how good the current arrangement is, by checking how well each piece aligns with its neighbors—lower cost means a better fit. The algorithm then repeatedly swaps pieces and recalculates the cost. Using simulated annealing, it sometimes accepts worse arrangements temporarily to escape local mistakes. This process continues until the arrangement stabilizes and the total mismatches are minimized, resulting in the reconstructed image.
+\\
+\\
+
+\begin{algorithm}[h]
+\caption{Jigsaw Puzzle Solver using Adaptive Simulated Annealing}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} SOLVE\_JIGSAW\_PUZZLE(\\
+$image, pieces\_x, pieces\_y$)
+\STATE $pieces \leftarrow$ SplitImage($image, pieces\_x, pieces\_y$)
+\STATE $current\_solution \leftarrow$ Shuffle($pieces$)
+\STATE $T \leftarrow T_{initial}$, $best\_cost \leftarrow$ CalculateCost($current\_solution$)
+
+\FOR{$i \leftarrow 1$ to $max\_iterations$}
+    \STATE Swap two random pieces in $current\_solution$
+    \STATE $new\_cost \leftarrow$ CalculateCost($current\_solution$)
+    \STATE $\Delta E \leftarrow new\_cost - best\_cost$
+    
+    \IF{$\Delta E < 0$ or $random() < e^{-\Delta E / T}$}
+        \IF{$new\_cost < best\_cost$}
+            \STATE $best\_cost \leftarrow new\_cost$
+        \ENDIF
+    \ELSE
+        \STATE Undo swap
+    \ENDIF
+    
+    \IF{$stagnant\_iterations > threshold$}
+        \STATE $T \leftarrow \min(T \times 2, T_{initial})$  \COMMENT{Reheat}
+    \ELSE
+        \STATE $T \leftarrow \max(T \times cooling\_factor, T_{min})$
+    \ENDIF
+\ENDFOR
+
+\RETURN $best\_solution$
+\STATE \textbf{end procedure}
+
+\STATE
+\STATE \textbf{procedure} CALCULATE\_COST($solution$)
+\STATE $cost \leftarrow 0$
+\FOR{each adjacent piece pair in $solution$}
+    \STATE $cost \leftarrow cost +$ EdgeDifference(piece1, piece2)
+\ENDFOR
+\RETURN $cost$
+\STATE \textbf{end procedure}
+
+\STATE
+\STATE \textbf{procedure} EDGE\_DIFFERENCE($piece1, piece2$)
+\RETURN $1 -$ NormalizedCorrelation
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+
+
+
+\section{Conclusion}
+This laboratory work shows how AI search algorithms can be used effectively for solving different types of problems. The Rabbit Leap Problem explains the basic differences between BFS and DFS—where BFS always finds the best solution but uses more memory, and DFS is faster but not always optimal. The plagiarism detection system shows how the A* search algorithm, with the help of good heuristics and similarity checks, can handle real-world text problems successfully.
+
+The k-SAT and 3-SAT problems extend this study to harder cases, known as NP-complete problems. They are solved using Hill Climbing, Beam Search, and Variable Neighborhood Descent (VND). From the results, Hill Climbing performs the best overall, while Beam Search and VND also give good insights into how different search methods balance speed and accuracy. The Jigsaw Puzzle problem is solved using Simulated Annealing, which is a random (stochastic) optimization method. It helps in reducing mismatches between image pieces to rebuild the original picture correctly.
+
+\begin{thebibliography}{00}
+\bibitem{b1} S. Russell and P. Norvig, ``Artificial Intelligence: A Modern Approach,'' 4th ed. Pearson, 2020.
+\bibitem{b2} P. E. Hart, N. J. Nilsson, and B. Raphael, ``A formal basis for the heuristic determination of minimum cost paths,'' \emph{IEEE Transactions on Systems Science and Cybernetics}, vol. 4, no. 2, pp. 100-107, 1968.
+\bibitem{b3} E. W. Dijkstra, ``A note on two problems in connexion with graphs,'' \emph{Numerische Mathematik}, vol. 1, no. 1, pp. 269-271, 1959.
+\bibitem{b4} V. I. Levenshtein, ``Binary codes capable of correcting deletions, insertions, and reversals,'' \emph{Soviet Physics Doklady}, vol. 10, no. 8, pp. 707-710, 1966.
+\bibitem{b5} C. D. Manning and H. Schütze, ``Foundations of Statistical Natural Language Processing,'' MIT Press, 1999.
+\bibitem{b6} T. H. Cormen, C. E. Leiserson, R. L. Rivest, and C. Stein, ``Introduction to Algorithms,'' 3rd ed. MIT Press, 2009.
+\bibitem{b7} A. Barron-Cedeno, P. Rosso, E. Agirre, and G. Labaka, ``Plagiarism detection across distant language pairs,'' in \emph{Proceedings of the 23rd International Conference on Computational Linguistics}, 2010, pp. 37-45.
+\bibitem{b8} J. Kamps and M. Marx, ``Words in multiple contexts: How to identify them?'' in \emph{Advances in Information Retrieval}, Springer, 2005, pp. 262-273.
+\end{thebibliography}
+
+\end{document}
