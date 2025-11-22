@@ -1,0 +1,762 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{hyperref}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{CS307/CS367 Artificial Intelligence Lab : Pre-End-Sem Lab Report}
+
+\author{
+\begin{tabular}{ccc}
+\textbf{Divya Kumar Jha} & \textbf{Parth Jindal} & \textbf{Gaurav Soni} \\
+Computer Science and Engineering & Computer Science and Engineering & Computer Science and Engineering \\
+\small 202351034@iiitvadodara.ac.in & \small 202351097@iiitvadodara.ac.in & \small 202351039@iiitvadodara.ac.in \\
+\multicolumn{3}{c}{\textit{Indian Institute of Information Technology Vadodara}} \\
+\multicolumn{3}{c}{\textit{ India}} \\[0.3cm]
+\multicolumn{3}{c}{\href{https://github.com/gauravs2430/CS307_CS367_2025.git}{\textbf{GitHub Repo Link}}}
+\end{tabular}
+}
+
+\maketitle
+
+
+\begin{abstract}
+In this report, we describe the design, implementation, and analysis of four significant artificial intelligence systems:, Gaussian Hidden Markov Models (HMMs), Hopfield Neural Networks, reinforcement-learning-based multi-armed bandits, and an MDP fully solved by policy iteration. Gaussian HMMs were used on financial time-series data to deconstruct hidden market regimes and study patterns of volatility. Hopfield networks were utilized as both associative memories and energy-based solutions to the Eight-Rook constraint satisfaction problem and the Travelling Salesman Problem (TSP). Reinforcement-learning based concepts were experienced through MENACE, stationary binary bandits, and non-stationary 10-armed bandit needing to do adaptive epsilon greedy updates. Lastly, the Gbike bicycle rental environment was structured as a finite MDP solved using policy iteration under realistic constraints relating to stochastic demand, limited parking, and biased transfer costs. These investigations together illustrate how probabilistic modeling, energy-based neural computation, and reinforcement learning could be utilized in dynamic, uncertain, and combinatorial environments.
+\end{abstract}
+
+
+\begin{IEEEkeywords}
+Hidden Markov Models, Financial Time Series, Hopfield Networks, Associative Memory, Eight-Rook Problem, Travelling Salesman Problem, Reinforcement Learning, Multi-Armed Bandits, Epsilon-Greedy, Non-Stationary Bandits, MENACE, Markov Decision Processes, Policy Iteration, Gbike Rental Problem.
+\end{IEEEkeywords}
+
+
+\section{Introduction}
+The objective of this report is to investigate a wide variety of artificial intelligence approaches across the areas of probabilistic modeling, neural computation, reinforcement learning, and decision-theoretic planning. Each of the experiments is used to examine a class of AI approaches as they relate to real-world and computationally difficult problems.
+
+First, we cover Gaussian Hidden Markov Models (HMMs), which apply HMMs to real financial market data to identify hidden volatility regimes and analyze transition dynamics. In particular, the HMM framework supports the interpretation of latent-state models as descriptions of temporal processes, even when such processes have an underlying structure that is not explicitly visible or observable.
+
+Next, we examine Hopfield Neural Networks as energy-based models suited to solve associative models and constrained optimization tasks. Our experiments include storing and retrieving noisy patterns, solving the Eight-Rook constraint satisfaction problem in the number of Hopfield energy minimization tasks, and implementing a Hopfield-Tank formulation on the Travelling Salesman Problem.
+
+Finally, we apply reinforcement learning principles to problems in the context of MENACE, stationary binary bandits, and a non-stationary 10-armed bandit. The experiments in this section show what action-selection looks like in uncertain environments, the limitations of using standard epsilon-greedy learning in a drifting environment, and the deliberate adaptation of value-updating rules.
+
+Finally, the Gbike Bicycle Rental Problem is formulated as a finite continuing Markov Decision Process (MDP). A complete policy iteration algorithm is implemented to derive the optimal nightly bike-movement decisions under stochastic rental demands, limited storage capacity, and modified transfer and parking costs.
+
+Together, these experiments demonstrate how different AI paradigms—probabilistic inference, energy-based optimization, reinforcement learning, and dynamic programming—address uncertainty, constraint structure, and sequential decision-making in complex environments.
+
+\section{Gaussian Hidden Markov Models for Financial Market Regime Detection}
+
+\subsection{Problem Statement}
+
+The goal of this lab assignment is to analyze financial time series data using Gaussian Hidden Markov Models (HMMs). The HMM is employed to identify hidden market regimes (e.g., periods of high and low volatility) and model the dynamics of financial returns. The task involves collecting real-world financial data, modeling it with HMM, and interpreting the results to draw insights about market conditions.
+
+Financial markets often exhibit distinct periods of different volatility or risk levels, and these periods may not be directly observable. Gaussian HMM allows these hidden states (such as bull and bear market phases) to be inferred from observable quantities such as price returns \cite{b5}\cite{b6}.
+
+\subsubsection*{Part 1: Data Collection and Preprocessing}
+
+\textbf{Data Acquisition:} Historical financial data (such as stock prices or index levels) must be downloaded using a reliable data source such as Yahoo Finance. A time range of at least ten years is preferred to capture long-term market regimes. Stocks like Apple (AAPL), Tesla (TSLA), or indices like the S\&P 500 may be used.
+
+\textbf{Preprocessing:} Extract adjusted closing prices and compute daily returns:
+\[
+R_t = \frac{P_t - P_{t-1}}{P_{t-1}}
+\]
+Missing or irregular values should be cleaned to ensure high-quality input for the model.
+
+\subsubsection*{Part 2: Gaussian Hidden Markov Model}
+
+\textbf{Model Fitting:}  
+A Gaussian HMM is trained on the daily return series \cite{b5}\cite{b6}. An appropriate number of hidden states (typically 2 or more) must be chosen to capture market regimes such as:
+\begin{itemize}
+    \item Low-volatility (stable) regime
+    \item High-volatility (turbulent) regime
+\end{itemize}
+
+\textbf{Parameter Analysis:}  
+For each hidden state, the mean and variance of returns must be examined to interpret the underlying financial behavior (e.g., bull/bear markets, risk levels).
+
+\subsubsection*{Part 3: Interpretation and Inference}
+
+\textbf{Inferred Hidden States:}  
+Once trained, the HMM predicts the most likely hidden state for every day in the dataset. These state sequences must be visualized over time to understand transitions between market regimes.
+
+\textbf{Transition Matrix:}  
+The transition matrix of the HMM shows the probability of switching between states (e.g., from low volatility to high volatility). These values help interpret market persistence and risk dynamics.
+
+\subsubsection*{Part 4: Evaluation and Visualization}
+
+\textbf{Visualization:}
+\begin{itemize}
+    \item Plot price series with color-coded hidden states.
+    \item Plot return series colored by state.
+    \item Include visualizations that clearly separate different volatility regimes.
+\end{itemize}
+
+\textbf{Model Evaluation:}  
+Discuss how well the chosen number of states captures market behavior. Analyze how increasing the number of states changes interpretability (e.g., using 3–6 states for finer regime segmentation).
+
+\subsubsection*{Part 5: Conclusions and Insights}
+
+\textbf{Market Regime Interpretation:}  
+Summarize the identified market regimes and interpret their meaning (e.g., high risk vs. stable phases). Discuss how investors may use these insights for:
+\begin{itemize}
+    \item Volatility forecasting
+    \item Risk management
+    \item Portfolio decision-making
+\end{itemize}
+
+\textbf{Future State Prediction:}  
+Using the transition matrix, estimate the near-term probability of the market switching regimes. Explain how this forecasting ability may assist trading strategies.
+
+\subsubsection*{Bonus Task }
+
+\begin{itemize}
+    \item Extend the Gaussian. HMM to more than two hidden states to capture complex market patterns, such as extreme volatility or stable growth.
+    \item Compare regime behavior across different financial assets (e.g., TSLA vs NVDA, or stock vs index).
+\end{itemize}
+
+\subsection{Methodology}
+
+The complete workflow consists of four steps:
+\begin{enumerate}
+    \item \textbf{Data Acquisition} — Historical TSLA and NVDA price data were downloaded using the Yahoo Finance API.
+    \item \textbf{Preprocessing} — Adjusted closing prices were extracted and converted into daily log returns.
+    \item \textbf{HMM Modeling} — A Gaussian HMM was fitted using daily returns to infer hidden volatility states.
+    \item \textbf{Visualization and Interpretation} — The identified regimes were plotted over prices and returns to understand transitions and behavioral patterns.
+\end{enumerate}
+
+\subsection{Algorithmic Framework}
+
+To formalize the workflow, the following pseudocode describes the data preprocessing, model training, and hidden state inference steps used in the HMM-based market regime detection.
+
+\begin{algorithm}[H]
+\caption{Data Preprocessing for Financial Time Series}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} PREPROCESS\_DATA($prices$)
+\STATE $close\_prices \leftarrow prices[\text{"Close"}]$
+\STATE $returns \leftarrow []$
+\FOR{$t = 1$ to $|close\_prices|-1$}
+    \STATE $R_t \leftarrow \frac{close\_prices[t] - close\_prices[t-1]}{close\_prices[t-1]}$
+    \STATE $returns.append(R_t)$
+\ENDFOR
+\STATE Remove missing or undefined values
+\STATE \textbf{return} $returns$
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Gaussian Hidden Markov Model Training}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} TRAIN\_GAUSSIAN\_HMM($returns$, $n\_states$)
+\STATE Initialize HMM with $n\_states$ Gaussian components
+\STATE Set covariance type to ``full''
+\STATE Set maximum iterations to 300
+\STATE Fit HMM model to $returns$
+\STATE \textbf{return} trained HMM model
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Hidden State Inference and Regime Visualization}
+\begin{algorithmic}[1]
+\STATE \textbf{procedure} DECODE\_REGIMES($model$, $returns$)
+\STATE $states \leftarrow model.predict(returns)$
+\FOR{each time index $t$}
+    \STATE Assign $states[t]$ as the hidden regime for day $t$
+\ENDFOR
+\STATE Plot closing prices color-coded by $states$
+\STATE Plot returns color-coded by $states$
+\STATE \textbf{return} $states$
+\STATE \textbf{end procedure}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Data Preprocessing}
+
+The adjusted closing price of TSLA was extracted and converted into daily percentage returns:
+
+\[
+R_t = \frac{P_t - P_{t-1}}{P_{t-1}}
+\]
+
+Missing values were removed, and the resulting dataset served as input to the HMM. A sample of the processed data is shown below.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Date} & \textbf{Close} & \textbf{Return} \\
+\hline
+2014-01-03 & 9.97 & -0.0036 \\
+2014-01-06 & 9.80 & -0.0171 \\
+2014-01-07 & 9.95 & 0.0160 \\
+2014-01-08 & 10.08 & 0.0128 \\
+2014-01-09 & 9.83 & -0.0248 \\
+\hline
+\end{tabular}
+\caption{Sample of Processed TSLA Daily Returns}
+\end{table}
+
+\subsection{Two-State Gaussian HMM Modeling}
+
+A two-state Gaussian Hidden Markov Model was first trained on TSLA daily returns. The model identifies two primary market regimes:
+\begin{itemize}
+    \item \textbf{State 0:} Low volatility, stable market conditions.
+    \item \textbf{State 1:} High volatility, turbulent market movements.
+\end{itemize}
+
+The inferred regimes were added to the dataset and visualized.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{img1.jpg}
+    \caption{TSLA Closing Prices Colored by HMM Hidden States}
+    \label{fig:placeholder}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{img2.jpg}
+    \caption{TSLA Daily Returns Grouped by HMM Hidden States}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsection{Multi-State HMM (Bonus 1)}
+
+To capture more detailed market behavior, the model was extended to a four-state Gaussian HMM. Each state represents a specific volatility-return pattern.
+
+\begin{itemize}
+    \item \textbf{State 0:} Very low variance, flat movement.
+    \item \textbf{State 1:} Moderate variance, mild fluctuations.
+    \item \textbf{State 2:} High variance, unstable behavior.
+    \item \textbf{State 3:} Very high variance, extreme market reactions.
+\end{itemize}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{img3.jpg}
+    \caption{TSLA Prices Colored by Multi-State (4-State) HMM}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{img4.jpg}
+    \caption{TSLA Returns Colored by 4-State HMM}
+    \label{fig:placeholder}
+\end{figure}
+
+State-wise statistical properties are summarized below.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{State} & \textbf{Mean Return} & \textbf{Variance} \\
+\hline
+0 & 0.0012 & 0.00045 \\
+1 & -0.0021 & 0.00190 \\
+2 & 0.0003 & 0.00015 \\
+3 & 0.0022 & 0.00340 \\
+\hline
+\end{tabular}
+\caption{State Statistics for 4-State Gaussian HMM (TSLA)}
+\end{table}
+
+\subsection{TSLA vs NVDA Comparison (Bonus 2)}
+
+To understand how market regimes differ across assets, the same 2-state HMM was applied to NVDA. Both TSLA and NVDA are high-volatility technology stocks, making them suitable for comparison.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{img5.jpg}
+    \caption{TSLA Returns Colored by Hidden States}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{img6.jpg}
+    \caption{NVDA Returns Colored by Hidden States}
+    \label{fig:placeholder}
+\end{figure}
+
+State statistics for both assets are shown below:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Asset} & \textbf{State} & \textbf{Mean Return} & \textbf{Variance} \\
+\hline
+TSLA & 0 & 0.001063 & 0.000537 \\
+TSLA & 1 & 0.004043 & 0.003353 \\
+NVDA & 0 & 0.001706 & 0.002201 \\
+NVDA & 1 & 0.002832 & 0.000359 \\
+\hline
+\end{tabular}
+\caption{Comparison of TSLA and NVDA Hidden State Characteristics}
+\end{table}
+
+\subsection{Discussion of Results}
+
+Several conclusions can be drawn:
+\begin{itemize}
+    \item TSLA shows greater volatility in both low and high volatility situations.
+    \item NVDA demonstrates more balanced behavior with smoother transitions and slightly higher average returns in both situations.
+    \item Multi-state HMM indicates that TSLA often shifts between medium and high-volatility periods.
+    \item NVDA usually stays longer in stable periods, suggesting momentum-driven behavior.
+\end{itemize}
+
+% \begin{thebibliography}{00}
+
+% \bibitem{b1} S. Russell and P. Norvig, \textit{Artificial Intelligence: A Modern Approach}, 3rd ed., Chapters 16, 17, 21.
+
+% \bibitem{b2} R. S. Sutton and A. G. Barto, \textit{Reinforcement Learning: An Introduction}, 2nd ed., Chapters 3, 4.
+
+% \bibitem{b3} R. S. Sutton and A. G. Barto, \textit{Reinforcement Learning: An Introduction}, 2nd ed., Chapters 1–2.
+
+% \bibitem{b4} D. J. C. MacKay, \textit{Information Theory, Inference, and Learning Algorithms}. Cambridge University Press.
+
+% \bibitem{b5} BNLearn Documentation, available at: \url{https://www.bnlearn.com/}.
+
+% \bibitem{b6} J.3 Workshop PDF, available at: \url{http://gauss.inf.um.es/umur/xjurponencias/talleres/J3.pdf}.
+
+% \end{thebibliography}
+
+\section{Hopfield Network for Associative Memory and Combinatorial Optimization}
+
+\subsection{Problem Statement}
+The objective of this lab is to understand the dynamics of Hopfield networks and apply them to three tasks:
+\begin{enumerate}
+    \item Evaluate the \textbf{error-correcting capability} of a Hopfield associative memory.
+    \item Formulate the \textbf{Eight-Rook problem} as an energy minimization task and solve it using Hopfield dynamics.
+    \item Solve a \textbf{10-city Travelling Salesman Problem (TSP)} using a Hopfield-inspired optimization framework and analyze the number of required weights.
+\end{enumerate}
+
+The experiments follow the theoretical foundations described in David MacKay’s \emph{Information Theory, Inference and Learning Algorithms} \cite{b4}.
+
+% -----------------------------------------------------
+\subsection{Hopfield Associative Memory}
+
+A Hopfield network is a recurrent neural network with symmetric weights and binary neurons $x_i \in \{-1, +1\}$.  
+Given $P$ training patterns $\{p^{(1)}, p^{(2)}, \ldots, p^{(P)}\}$, the Hebbian learning rule constructs the weight matrix as:
+
+\begin{equation}
+    W = \frac{1}{P} \sum_{k=1}^{P} p^{(k)} (p^{(k)})^T, \qquad w_{ii} = 0.
+\end{equation}
+
+During recall, neurons asynchronously update according to:
+\begin{equation}
+    x_i(t+1) = \text{sign}\left( \sum_{j} w_{ij} x_j(t) \right).
+\end{equation}
+
+The network converges to local minima of the energy function:
+\begin{equation}
+    E(x) = -\frac{1}{2} x^T W x.
+\end{equation}
+
+\subsubsection{Error-Correcting Capability}
+
+Three binary $10 \times 10$ digit patterns (0,1,2) were trained and then corrupted with varying noise levels (10\%, 20\%, 30\%, 40\%).  
+The recall accuracy results obtained from the simulation are shown in Table \ref{tab:error_correction}.
+
+\begin{table}[H]
+\centering
+\caption{Hopfield Error-Correction Performance}
+\label{tab:error_correction}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Noise Level} & \textbf{Recall Accuracy} \\
+\hline
+10\% & 100\% \\
+20\% & 100\% \\
+30\% & High Accuracy \\
+40\% & Moderate Accuracy \\
+\hline
+\end{tabular}
+\end{table}
+
+The network successfully reconstructed digits even when up to 30–40\% of the bits were flipped, demonstrating strong robustness.
+
+\subsubsection{Storage Capacity Experiment}
+
+Random patterns of dimension $N = 100$ were stored to estimate capacity.  
+The experimentally observed recall performance is shown below:
+
+\begin{table}[H]
+\centering
+\caption{Storage Capacity vs Accuracy}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Patterns Stored} & \textbf{Accuracy} \\
+\hline
+1--9 & 100\% \\
+10--12 & 96--94\% \\
+13--17 & Gradual decline to 60\% \\
+\hline
+\end{tabular}
+\end{table}
+
+This matches theoretical capacity $0.14N \approx 14$ patterns.
+
+% -----------------------------------------------------
+\subsection{Eight-Rook Problem Using Hopfield Network}
+
+The goal is to place eight rooks on an $8 \times 8$ chessboard such that no two rooks attack each other.  
+Let $v_{ij} \in \{0,1\}$ denote whether a rook is placed at row $i$, column $j$.
+
+The constraints are:
+\begin{align}
+    \sum_{j=1}^8 v_{ij} = 1 \quad &\text{(one rook per row)} \\
+    \sum_{i=1}^8 v_{ij} = 1 \quad &\text{(one rook per column)}
+\end{align}
+
+\subsubsection{Energy Function}
+
+The Hopfield energy function is defined as:
+\begin{equation}
+    E = A \sum_{i} (\sum_j v_{ij} - 1)^2 
+      + B \sum_{j} (\sum_i v_{ij} - 1)^2,
+\end{equation}
+where $A$ and $B$ penalize row/column violations.
+
+\subsubsection{Algorithm Implementation}
+
+\begin{algorithm}[H]
+\caption{Eight-Rook Hopfield Solver}
+\begin{algorithmic}[1]
+\STATE Initialize a random binary board $v \in \{0,1\}^{64}$
+\FOR{$t = 1$ to max\_iterations}
+    \STATE Randomly pick a position $k$
+    \STATE Flip $v_k$ and compute new energy $E'$
+    \IF{$E' \le E$}
+        \STATE Accept the flip
+    \ENDIF
+    \IF{$E = 0$}
+        \STATE \textbf{return} valid rook placement
+    \ENDIF
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+The solver successfully converged to a valid configuration with exactly 8 non-attacking rooks.
+
+% -----------------------------------------------------
+\subsection{10-City Travelling Salesman Problem Using Hopfield Optimization}
+
+To solve TSP, a matrix of neurons $V[i,t]$ is constructed where:
+\begin{itemize}
+    \item $i$ = city index
+    \item $t$ = tour position (1--10)
+\end{itemize}
+
+Thus, the network contains:
+\[
+10 \times 10 = 100 \text{ neurons}
+\]
+
+\subsubsection{Energy Function}
+
+Following Hopfield-Tank formulation, the energy is:
+\begin{align}
+E &= A \sum_i \left(\sum_t V_{it} - 1\right)^2
+ + B \sum_t \left(\sum_i V_{it} - 1\right)^2 \\
+&+ C \sum_{i,j,t} d_{ij} V_{it} V_{j,t+1}
+\end{align}
+
+\begin{algorithm}[H]
+\caption{Hopfield-Tank TSP Optimization}
+\begin{algorithmic}[1]
+\STATE Initialize potentials $U$ randomly
+\STATE Compute activations $V = \sigma(U)$
+\FOR{$iter = 1$ to max\_iter}
+    \STATE Compute gradient $\frac{\partial E}{\partial V}$
+    \STATE Update potentials $U \leftarrow U - \eta (\frac{\partial E}{\partial V} + U)$
+    \STATE Update activations $V = \sigma(U)$
+\ENDFOR
+\STATE Extract final tour using column-wise $\arg\max(V)$
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Results}
+
+The optimized tour obtained was:
+
+\[
+[7,3,6,9,1,0,8,4,2,5]
+\]
+
+This tour satisfied:
+\begin{itemize}
+    \item All 10 cities visited exactly once
+    \item No repeated cities
+    \item Valid Hamiltonian cycle
+\end{itemize}
+
+The tour length calculated using the distance matrix was 214.
+
+\subsubsection{Weight Matrix Analysis}
+
+The Hopfield network is fully connected:
+\[
+100 \times 100 = 10,000 \text{ weights}
+\]
+
+Removing the self-connections leaves 9,900 effective weights.
+
+% -----------------------------------------------------
+\subsection{Summary of Findings}
+
+\begin{itemize}
+    \item Hopfield associative memory successfully corrected noise up to 40\% corruption.
+    \item The Eight-Rook problem was solved through energy minimization with row/column constraints.
+    \item The Hopfield-Tank model produced a valid tour for a 10-city TSP and required 10,000 synaptic weights.
+\end{itemize}
+
+\section{Bandits and MENACE}
+
+\subsection{Problem Statement}
+
+Read the reference on MENACE by Michie \cite{b7} and check for its implementations. Pick the one that you like the most and go through the code carefully. Highlight the parts that you feel are crucial. If possible, try to code the MENACE in any programming language of your liking.
+
+Reference: Reinforcement Learning: an introduction by R Sutton and A Barto (Second Edition) (Chapter 1--2) \cite{b3}.
+
+Consider a binary bandit with two rewards \{1-success, 0-failure\}. The bandit returns 1 or 0 for the action that you select, i.e. 1 or 2. The rewards are stochastic (but stationary). Use an epsilon-greedy algorithm discussed in class and decide upon the action to take for maximizing the expected reward. There are two binary bandits named \texttt{binaryBanditA.m} and \texttt{binaryBanditB.m} waiting for you.
+
+Develop a 10-armed bandit in which all ten mean-rewards start out equal and then take independent random walks (by adding a normally distributed increment with mean zero and standard deviation 0.01 to all mean-rewards on each time step):
+\[
+\texttt{function [value] = bandit\_nonstat(action)}
+\]
+
+The 10-armed bandit that you developed (\texttt{bandit\_nonstat}) is difficult to crack with a standard epsilon-greedy algorithm since the rewards are non-stationary. We discussed in class how to track non-stationary rewards. Write a modified epsilon-greedy agent and test whether it is able to latch onto correct actions or not. Perform at least 10{,}000 time steps before commenting on the results.
+
+\subsection{Method Overview}
+\begin{itemize}
+    \item Used $\epsilon$-greedy for exploration.
+    \item In the stationary case, used sample-average Q-updates (based on \cite{b3}).
+    \item In the non-stationary case, used constant step-size updates to track drifting rewards.
+    \item Logged cumulative rewards, Q-value convergence, action frequencies, windowed averages, and optimal-action percentages.
+\end{itemize}
+
+\subsection{Results}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{img8.jpg}
+    \caption{Binary bandit experiment results}
+    \label{fig:placeholder}
+\end{figure}
+
+\paragraph{Interpretation}
+\begin{itemize}
+    \item Q-values converge close to the true success probabilities of each bandit.
+    \item The better bandit gets chosen much more often.
+    \item Cumulative reward increases steadily over time, indicating an improved policy.
+\end{itemize}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{img9.jpg}
+    \caption{Non-stationary 10-armed bandit results}
+    \label{fig:placeholder}
+\end{figure}
+
+\paragraph{Interpretation}
+\begin{itemize}
+    \item Average reward fluctuates because of drifting means.
+    \item Optimal-action percentage rises and falls as the environment changes.
+    \item The modified epsilon-greedy algorithm effectively tracks the changing best arms.
+\end{itemize}
+
+\section{Gbike Bicycle Rental Problem}
+
+\subsection{Objective}
+To model the Gbike bicycle rental system as a finite continuing MDP \cite{b1} and solve it using Policy Iteration \cite{b2}\cite{b3}. 
+The goal is to compute the optimal bike movement strategy under modified conditions such as a free shuttle 
+and parking penalties.
+
+\subsection{Problem Description}
+
+[Gbike bicycle rental] You are managing two locations for Gbike.  
+Each day, a number of customers arrive at each location to rent bicycles.  
+If you have a bike available, you rent it out and earn INR 10 from Gbike.  
+If you are out of bikes at that location, then the business is lost.  
+Bikes become available for renting the day after they are returned.  
+To help ensure that bicycles are available where they are needed, you can move them between the two locations 
+overnight, at a cost of INR 2 per bike moved.
+
+This problem formulation is mathematically equivalent to the well-known Jack’s Car Rental MDP described in \cite{b2}, but adapted for bikes.
+
+Assumptions: Assume that the number of bikes requested and returned at each location are Poisson random variables.  
+Expected numbers of rental requests are 3 and 4 and returns are 3 and 2 at the first and second locations respectively.  
+No more than 20 bikes can be parked at either of the locations.  
+You may move a maximum of 5 bikes from one location to the other in one night.  
+Consider the discount rate to be 0.9.
+
+Formulate the continuing finite MDP \cite{b1}, where time steps are days, the state is the number of bikes at each location 
+at the end of the day, and the actions are the net number of bikes moved between the two locations overnight.
+
+Download and extract files from gbike.zip.  
+Try to compare your formulation with the code.  
+Before proceeding further, ensure that you understand policy iteration clearly \cite{b2}.
+
+Write a program for policy iteration and resolve the Gbike bicycle rental problem with the following changes.  
+One of your employees at the first location rides a bus home each night and lives near the second location.  
+She is happy to shuttle one bike to the second location for free.  
+Each additional bike still costs INR 2, as do all bikes moved in the other direction.  
+In addition, you have limited parking space at each location.  
+If more than 10 bikes are kept overnight at a location (after any moving of cars), then an additional cost of INR 4 must be 
+incurred to use a second parking lot (independent of how many cars are kept there).
+
+\subsection{Modifications}
+Two changes are added to the standard Jack's Car Rental problem \cite{b2}:
+\begin{enumerate}
+    \item One employee moves \textbf{one bike for free} from Location 1 to Location 2 every night.
+    \item If a location keeps more than 10 bikes overnight, a \textbf{parking penalty of INR 4} is charged.
+\end{enumerate}
+
+\subsection{MDP Formulation}
+
+\subsubsection{States}
+A state is defined by the number of bikes at each location:
+\[
+s = (i, j), \quad 0 \le i,j \le 20
+\]
+
+\subsubsection{Actions}
+The action $a$ represents the net number of bikes moved from Location 1 to Location 2:
+\[
+a \in \{-5, -4, \dots, 0, \dots, 4, 5\}
+\]
+Actions are limited so that bike counts stay within $[0,20]$ after the move.
+
+\subsubsection{Transition}
+Transitions follow the standard MDP probabilistic framework \cite{b1}.
+
+Given state $(i,j)$ and action $a$:
+\[
+i' = i - a,\qquad j' = j + a
+\]
+Capped within $0$–$20$ afterwards.
+
+Next day rentals:
+\[
+\text{rent}_1 = \min(i', R_1), \quad \text{rent}_2 = \min(j', R_2)
+\]
+
+Next state:
+\[
+i_{next} = \min(20,\, i' - \text{rent}_1 + Q_1)
+\]
+\[
+j_{next} = \min(20,\, j' - \text{rent}_2 + Q_2)
+\]
+
+Transition probabilities are computed using Poisson PMFs just like in Sutton & Barto’s treatment \cite{b2}.
+
+\subsubsection{Reward}
+The total reward consists of:
+
+\paragraph{1. Rental Revenue}
+\[
+10 \times (\text{expected successful rentals})
+\]
+
+\paragraph{2. Move Cost (with modification)}
+\[
+\text{move\_cost}(a)=
+\begin{cases}
+2(a-1) & \text{if } a>0 \\
+2|a| & \text{if } a\le0
+\end{cases}
+\]
+
+\paragraph{3. Parking Penalty}
+\[
+\text{penalty}=4\cdot\mathbf{1}(i'>10) + 4\cdot\mathbf{1}(j'>10)
+\]
+
+\subsection{Policy Iteration}
+
+We use full Policy Iteration as described in \cite{b2}\cite{b3}:
+
+\subsubsection{1. Policy Evaluation}
+\[
+V^{\pi}(s)=\sum_{s'} P(s'|s,\pi(s)) \left[R(s,\pi(s),s') + \gamma V^{\pi}(s')\right]
+\]
+
+\subsubsection{2. Policy Improvement}
+\[
+\pi_{new}(s) = \arg\max_a Q(s,a)
+\]
+Process repeats until the policy stops changing, following Sutton & Barto \cite{b2}.
+
+\subsection{Implementation Notes}  
+\begin{itemize}  
+    \item Poisson PMFs were precomputed for speed.  
+    \item Transition probabilities were cached.  
+    \item Only feasible actions were evaluated.  
+    \item The value function was solved iteratively until it converged \cite{b2}.  
+\end{itemize}  
+
+\subsection{Output}  
+The figure below shows the output generated by our program after running Policy Iteration on the modified Gbike rental problem.  
+
+\begin{figure}  
+    \centering  
+    \includegraphics[width=1\linewidth]{img7.jpg}  
+   \caption{  
+Policy iteration results for the modified Gbike bicycle rental problem.  
+The first five subplots show the evolution of the policy $\pi$ from iteration $0$ to iteration $4$.  
+The final subplot presents the value function $v_{4}$, which represents the converged state-value landscape under the optimal policy.}  
+    \label{fig:placeholder}  
+\end{figure}  
+
+\subsection{Result Summary}  
+Based on the printed policy table and the value function:  
+\begin{itemize}  
+    \item The optimal policy tends to move bikes from Location 1 to Location 2 more often due to the \textbf{free first bike}.  
+    \item The policy avoids keeping more than 10 bikes due to the \textbf{parking penalty}.  
+    \item Convergence typically occurs in a small number of policy iterations \cite{b2}.  
+\end{itemize}  
+
+\section{Conclusion}  
+The experiments in this report show the range of artificial intelligence methods and their effectiveness across different problem areas. Gaussian HMMs demonstrated how latent-state probabilistic models can reveal hidden structures in financial markets and show regime changes. Hopfield networks proved strong capabilities in associative memory, constraint satisfaction, and combinatorial optimization by successfully recalling noisy patterns and solving both the Eight-Rook problem and a 10-city TSP.  
+
+Reinforcement-learning methods, including MENACE and epsilon-greedy multi-armed bandits, highlighted the challenges of exploration and value estimation in both stationary and non-stationary reward environments. The modified epsilon-greedy approach adjusted well to changing action values in the 10-armed bandit.  
+
+The Gbike bicycle rental experiment showed the power of Markov Decision Processes and policy iteration for solving sequential control problems under uncertainty. By incorporating realistic operational constraints, such as parking penalties and biased transfer costs, we demonstrated how decision-theoretic models apply to practical resource-allocation scenarios.  
+
+Overall, these experiments illustrate how probabilistic models, neural systems, reinforcement learning, and dynamic programming provide complementary strengths. They enable AI systems to handle uncertainty, optimize complex goals, and make smart decisions in various environments.
+
+
+\begin{thebibliography}{00}
+
+\bibitem{b1} S. Russell and P. Norvig, \textit{Artificial Intelligence: A Modern Approach}, 3rd ed., Chapters 16, 17, 21.
+
+\bibitem{b2} R. S. Sutton and A. G. Barto, \textit{Reinforcement Learning: An Introduction}, 2nd ed., Chapters 3, 4.
+
+\bibitem{b3} R. S. Sutton and A. G. Barto, \textit{Reinforcement Learning: An Introduction}, 2nd ed., Chapters 1–2.
+
+\bibitem{b4} D. J. C. MacKay, \textit{Information Theory, Inference, and Learning Algorithms}. Cambridge University Press.
+
+\bibitem{b5} \textit{BNLearn Documentation}, available at: \url{https://www.bnlearn.com/}.
+
+\bibitem{b6} J.3 Workshop PDF, available at: \url{http://gauss.inf.um.es/umur/xjurponencias/talleres/J3.pdf}.
+\bibitem{b7} D. Michie, \textit{Matchbox Educable Noughts and Crosses Engine (MENACE)}, available at: \url{http://people.csail.mit.edu/brooks/idocs/matchbox.pdf}.
+
+\end{thebibliography}
+\end{document}
